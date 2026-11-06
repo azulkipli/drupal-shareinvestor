@@ -1,0 +1,8 @@
+import market feed data:
+  title: 'Import market feed data'
+  description: 'Allows POSTing stock price snapshots to the ingestion API.'
+  restrict access: true
+
+view market feed prices:
+  title: 'View market feed prices'
+  description: 'Allows viewing stored stock prices on the /market-feed page.'

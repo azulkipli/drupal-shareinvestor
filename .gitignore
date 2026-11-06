@@ -1,0 +1,36 @@
+# Ignore docs for private interview prep and test materials
+/docs/
+
+# Composer & Vendor
+/vendor/
+
+# Drupal Core & Contrib
+/web/core/
+/web/modules/contrib/
+/web/themes/contrib/
+/web/profiles/contrib/
+/web/libraries/
+
+# Drupal Site Specific
+/web/sites/*/settings.local.php
+/web/sites/*/settings.ddev.php
+/web/sites/*/services.local.yml
+/web/sites/*/files/
+/web/sites/default/files/
+
+# DDEV
+.ddev/*
+!.ddev/config.yaml
+!.ddev/commands/
+!.ddev/docker-compose.*.yaml
+
+# Environment & IDE
+.env
+.env.local
+.idea/
+.vscode/
+*.swp
+*~
+.DS_Store
+/.editorconfig
+/.gitattributes

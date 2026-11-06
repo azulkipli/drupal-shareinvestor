@@ -1,0 +1,62 @@
+<?php
+
+/**
+ * @file
+ * Install, update and uninstall functions for the market_feed module.
+ */
+
+declare(strict_types=1);
+
+/**
+ * Implements hook_schema().
+ */
+function market_feed_schema(): array {
+  $schema['market_feed_prices'] = [
+    'description' => 'Stores latest stock price snapshots per symbol.',
+    'fields' => [
+      'symbol' => [
+        'description' => 'Unique stock ticker symbol (e.g. AAPL).',
+        'type' => 'varchar',
+        'length' => 20,
+        'not null' => TRUE,
+      ],
+      'price' => [
+        'description' => 'Latest closing/trading price.',
+        'type' => 'numeric',
+        'precision' => 12,
+        'scale' => 4,
+        'not null' => TRUE,
+        'default' => 0.0000,
+      ],
+      'change_amount' => [
+        'description' => 'Price change amount compared to previous close.',
+        'type' => 'numeric',
+        'precision' => 12,
+        'scale' => 4,
+        'not null' => TRUE,
+        'default' => 0.0000,
+      ],
+      'volume' => [
+        'description' => 'Total accumulated trading volume.',
+        'type' => 'int',
+        'size' => 'big',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+      ],
+      'updated_at' => [
+        'description' => 'UNIX timestamp of the price snapshot update.',
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 0,
+      ],
+    ],
+    'primary key' => ['symbol'],
+    'indexes' => [
+      'idx_updated_at' => ['updated_at'],
+      'idx_volume' => ['volume'],
+    ],
+  ];
+
+  return $schema;
+}

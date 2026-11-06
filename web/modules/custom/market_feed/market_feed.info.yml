@@ -1,0 +1,6 @@
+name: 'Market Feed'
+type: module
+description: 'High-throughput stock market data ingestion and display module.'
+package: 'Custom'
+core_version_requirement: ^10 || ^11
+php: 8.1

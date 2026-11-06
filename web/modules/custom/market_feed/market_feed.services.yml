@@ -1,0 +1,12 @@
+services:
+  market_feed.importer:
+    class: Drupal\market_feed\Service\MarketFeedImporter
+    arguments:
+      - '@database'
+      - '@cache_tags.invalidator'
+      - '@datetime.time'
+      - '@logger.channel.market_feed'
+
+  logger.channel.market_feed:
+    parent: logger.channel_base
+    arguments: ['market_feed']
