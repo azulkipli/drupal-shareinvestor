@@ -1,0 +1,7 @@
+services:
+  market_feed.commands:
+    class: \Drupal\market_feed\Commands\MarketFeedCommands
+    arguments:
+      - '@market_feed.importer'
+    tags:
+      - { name: drush.command }
