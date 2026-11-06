@@ -53,10 +53,23 @@ final class MarketFeedCommands extends DrushCommands {
     $totalRows = count($payload);
     $this->io()->section(sprintf('Starting Ingestion of %s records...', number_format($totalRows)));
 
-    $startTime = microtime(TRUE);
-    $startMemory = memory_get_usage(TRUE);
+    // Initialize progress bar for large datasets
+    $chunkEstimate = (int) ceil($totalRows / 1000);
+    $progressBar = $this->io()->createProgressBar($chunkEstimate);
+    $progressBar->setFormat(' %current%/%max% [%bar%] %percent:3s%% -- %message%');
+    $progressBar->setMessage('Parsing & validating records...');
+    $progressBar->start();
 
-    $result = $this->importer->import($payload);
+    $startTime = microtime(TRUE);
+
+    $result = $this->importer->import($payload, function (int $chunkCount, int $importedTotal, int $totalChunks, int $currentChunk) use ($progressBar): void {
+      $progressBar->setMessage(sprintf('Upserting chunk %d/%d (%s records committed)', $currentChunk, $totalChunks, number_format($importedTotal)));
+      $progressBar->advance();
+    });
+
+    $progressBar->setMessage('Finishing import & invalidating cache tags...');
+    $progressBar->finish();
+    $this->io()->newLine(2);
 
     $duration = microtime(TRUE) - $startTime;
     $memoryPeak = memory_get_peak_usage(TRUE) / (1024 * 1024);

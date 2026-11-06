@@ -14,6 +14,8 @@ interface MarketFeedImporterInterface {
    *
    * @param array $payload
    *   Raw array of price items from the JSON body.
+   * @param callable|null $progressCallback
+   *   Optional callback triggered per chunk: fn(int $chunkCount, int $totalProcessed, int $totalChunks).
    *
    * @return array
    *   Summary associative array:
@@ -21,6 +23,6 @@ interface MarketFeedImporterInterface {
    *   - skipped: int (number of malformed rows skipped)
    *   - errors: array of error details with row index, symbol, and reason
    */
-  public function import(array $payload): array;
+  public function import(array $payload, ?callable $progressCallback = NULL): array;
 
 }

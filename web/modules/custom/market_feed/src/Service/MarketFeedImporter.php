@@ -34,7 +34,7 @@ class MarketFeedImporter implements MarketFeedImporterInterface {
   /**
    * {@inheritdoc}
    */
-  public function import(array $payload): array {
+  public function import(array $payload, ?callable $progressCallback = NULL): array {
     $validRows = [];
     $errors = [];
     $requestTime = $this->time->getRequestTime();
@@ -71,8 +71,9 @@ class MarketFeedImporter implements MarketFeedImporterInterface {
     // Step 2: Chunked batch upsert with transaction boundary.
     if (!empty($validRows)) {
       $chunks = array_chunk(array_values($validRows), self::CHUNK_SIZE);
+      $totalChunks = count($chunks);
 
-      foreach ($chunks as $chunk) {
+      foreach ($chunks as $chunkIndex => $chunk) {
         $transaction = $this->connection->startTransaction();
         try {
           $query = $this->connection->upsert('market_feed_prices')
@@ -85,6 +86,10 @@ class MarketFeedImporter implements MarketFeedImporterInterface {
 
           $query->execute();
           $importedCount += count($chunk);
+
+          if ($progressCallback !== NULL) {
+            $progressCallback(count($chunk), $importedCount, $totalChunks, $chunkIndex + 1);
+          }
         }
         catch (\Throwable $e) {
           $transaction->rollBack();
