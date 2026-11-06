@@ -36,16 +36,56 @@ Run unit tests inside DDEV:
 ddev exec 'vendor/bin/phpunit web/modules/custom/market_feed/tests/src/Unit/MarketFeedImporterTest.php'
 ```
 
-### Running High-Volume Import via Custom Drush Command
-The module provides a built-in Drush command for file-based ingestion:
+### High-Volume Ingestion via Custom Drush Command (`drush mf:import`)
+For importing large market feed datasets (e.g. 50,000+ rows) without HTTP request timeouts or gateway limits, the module provides a custom Drush command with an interactive real-time progress bar.
+
+#### 1. Generate Benchmark Data (Optional)
+Generate a 50,000-row realistic payload (49,950 valid rows + 50 isolated malformed rows):
 ```bash
-ddev drush market-feed:import /var/www/html/path/to/prices.json
-# Or using alias:
-ddev drush mf:import /var/www/html/path/to/prices.json
+ddev exec php scripts/generate_benchmark_payload.php
+```
+*(Creates `benchmark_50k.json` ~5.7 MB in project root).*
+
+#### 2. Execute Ingestion with Drush
+Run the command by passing the file path (relative to the container `/var/www/html/`):
+```bash
+# Standard command:
+ddev drush market-feed:import /var/www/html/benchmark_50k.json
+
+# Or using the shorthand alias:
+ddev drush mf:import /var/www/html/benchmark_50k.json
+```
+
+#### 3. CLI Output & Progress Bar Preview
+As the command runs, Drush renders a dynamic progress bar per 1,000-row chunk, followed by a performance metrics table and error diagnostics:
+```text
+Starting Ingestion of 50,000 records...
+---------------------------------------
+ 50/50 [▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓] 100% -- Upserting chunk 50/50 (49,950 records committed)
+
+ [OK] Import finished in 0.65 seconds! Peak Memory: 66.21 MB
+
+ ----------------------- ----------------------- 
+  Metric                  Value                  
+ ----------------------- ----------------------- 
+  Total Rows in File      50,000                 
+  Successfully Upserted   49,950                 
+  Skipped (Malformed)     50                     
+  Execution Duration      0.648 seconds          
+  Processing Throughput   77,163 records/second  
+ ----------------------- ----------------------- 
+
+ ! [WARNING] Encountered 50 errors. Displaying first 5:
+ ------ -------- ------------------------------------------------------------ 
+  Row    Symbol   Error Reason                                                
+ ------ -------- ------------------------------------------------------------ 
+  0               Field "symbol" is required and must be a non-empty string.  
+  1000            Field "symbol" is required and must be a non-empty string.  
+ ------ -------- ------------------------------------------------------------ 
 ```
 
 **Benchmark Performance on 50,000 Rows Payload:**
-- **Drush CLI Throughput:** ~82,000 records/sec (0.61 seconds, Peak Memory: 66.2 MB)
+- **Drush CLI Throughput:** ~80,000+ records/sec (0.61–0.65 seconds, Peak Memory: 66.2 MB)
 - **HTTP REST Ingestion:** ~92,000 records/sec (0.54 seconds)
 - **Fault Isolation:** 49,950 records successfully upserted, 50 malformed records isolated into structured errors.
 
